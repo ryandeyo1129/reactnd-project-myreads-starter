@@ -5,14 +5,14 @@ import { Link } from 'react-router-dom';
 
 export class Shelves extends React.Component {
   render () {
-    const { currentlyReading, wantToRead, read, updateBook } = this.props
+    const { books, updateBook } = this.props
 
     return (
       <div className="list-books-content">
         <div>
-          <BookShelf shelfName='Currently Reading' books={currentlyReading} updateBook={updateBook} />
-          <BookShelf shelfName='Want to Read' books={wantToRead} updateBook={updateBook} />
-          <BookShelf shelfName='Read' books={read} updateBook={updateBook} />
+          <BookShelf shelfName='Currently Reading' shelfId='currentlyReading' books={books} updateBook={updateBook} />
+          <BookShelf shelfName='Want to Read' shelfId='wantToRead' books={books} updateBook={updateBook} />
+          <BookShelf shelfName='Read' shelfId='read' books={books} updateBook={updateBook} />
         </div>
         <Link to="/search" className="open-search">
           <button>Add a book</button>

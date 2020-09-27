@@ -1,21 +1,14 @@
 import React from 'react';
 
 export class Options extends React.Component {
-  state = { value: this.props.book.shelf || "none", };
+  state = { value: this.props.book.shelf };
 
   updateBook = () => {
     this.props.updateBook(this.props.book, this.state.value);
   };
   onChange = (e) => {
-    e.preventDefault();
-    
-    if (window.location.pathname === "/") {
-      const shelfSelect = e.target.value;
-      this.setState({ value: shelfSelect }, () => { this.updateBook(); })
-    } else {
-      const shelfSelect = e.target.value;
-      this.setState({ value: shelfSelect }, () => { this.updateBook(); })
-    }
+    const shelfSelect = e.target.value;
+    this.setState({ value: shelfSelect }, () => { this.updateBook(this.props.book, shelfSelect); })
   }
   
   render() {

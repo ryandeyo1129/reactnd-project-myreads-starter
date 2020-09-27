@@ -10,14 +10,29 @@ class BooksApp extends React.Component {
   state = {
     query: '',
     bookGrid: [],
-    currentlyReading: [],
-    wantToRead: [],
-    read: [],
+    books: [],
     error: false
   }
 
+  componentDidMount() {
+    BooksAPI.getAll()
+      .then(books => {
+        books.forEach(book => {
+          this.setState((state) => {
+            return { books: state.books.concat(book) };
+          })
+        })
+      })
+  }
+  refreshAllBooks = () => {
+    BooksAPI.getAll()
+      .then((books) => { this.setState(() => ({
+          books: books,
+        }));
+      })
+  }
   updateQuery = (query) => {
-    if (query === '' || query === '^\\s+$') {
+    if (/^\s*$/.test(query)) {
       this.setState(() => ({
         error: false,
         bookGrid: [],
@@ -26,10 +41,24 @@ class BooksApp extends React.Component {
       BooksAPI.search(query)
         .then(books => {
           if (!books.error) {
+            BooksAPI.getAll()
+              .then(bookResults => {
+                bookResults.forEach(bookResult => {
+                  books.forEach(book => {
+                    if (bookResult.id === book.id) {
+                      book.shelf = bookResult.shelf
+                      this.updateBook(bookResult, bookResult.shelf)
+                    } else {
+                      this.updateBook(bookResult, 'none')
+                    }
+                  })
+                })
+              })
             this.setState(() => ({
               query: query.trim(),
-              bookGrid: books
-            })) 
+              bookGrid: books,
+              error: false
+            }))
           } else {
             this.setState(() => ({
               error: true,
@@ -39,65 +68,25 @@ class BooksApp extends React.Component {
         })
     }
   }
-  componentDidMount() {
-    BooksAPI.getAll()
-      .then(books => {
-        books.forEach(book => {
-          if (book.shelf === 'currentlyReading') {
-            this.setState((state) => {
-              return { currentlyReading: state.currentlyReading.concat(book) };
-            })
-          }
-          if (book.shelf === 'wantToRead') {
-            this.setState((state) => {
-              return { wantToRead: state.wantToRead.concat(book) };
-            })
-          }
-          if (book.shelf === 'read') {
-            this.setState((state) => {
-              return { read: state.read.concat(book) };
-            })
-          }
-        })
-      })
-  }
   updateBook = (book, shelf) => {
     BooksAPI.update(book, shelf)
       .then((shelves) => {
-        this.setState((state) => ({
-          currentlyReading: state.currentlyReading.filter((b) => b.title !== book.title),
-          wantToRead: state.wantToRead.filter((b) => b.title !== book.title),
-          read: state.read.filter((b) => b.title !== book.title)
-        }));
-        for (const [shelfName, books] of Object.entries(shelves)) {
-          books.forEach(shelfBook => {
-            if (shelfBook === book.id) {
-              if (shelfName === 'currentlyReading') {
-                book.shelf = 'currentlyReading'
-                this.setState((state) => {
-                  return { currentlyReading: state.currentlyReading.concat(book) };
-                })
-              }
-              if (shelfName === 'wantToRead') {
-                book.shelf = 'wantToRead'
-                this.setState((state) => {
-                  return { wantToRead: state.wantToRead.concat(book) };
-                })
-              }
-              if (shelfName === 'read') {
-                book.shelf = 'read'
-                this.setState((state) => {
-                  return { read: state.read.concat(book) };
-                })
-              }
-            }
-          })
-        }
+        let bookList = this.state.books
+        book.shelf = shelf
+
+        this.setState(state => {
+          return { 
+            books: state.books.filter(listBook => listBook.id === book.id)
+          }
+        })
+        this.setState({
+          books: bookList
+        })
       })
   }
 
   render() {
-    const { bookGrid, currentlyReading, wantToRead, read } = this.state
+    const { books, bookGrid, currentlyReading, wantToRead, read } = this.state
 
     return (
       <div className="app">
@@ -110,6 +99,7 @@ class BooksApp extends React.Component {
             currentlyReading={currentlyReading}
             wantToRead={wantToRead}
             read={read}
+            books={books}
           />
         )} />
         <Route

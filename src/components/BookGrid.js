@@ -9,9 +9,9 @@ export class BookGrid extends React.Component {
     return (
       <div className="search-books-results">
         <ol className="books-grid">
-          {bookGrid && bookGrid.filter(book => book.imageLinks).map((book, i) => {
+          {bookGrid && bookGrid.filter(book => book.imageLinks).map((book) => {
             return (
-              <li key={i}>
+              <li key={book.id}>
                 <Book
                   book={book}
                   thumbnail={book.imageLinks.thumbnail}
