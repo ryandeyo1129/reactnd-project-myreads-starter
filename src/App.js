@@ -22,13 +22,7 @@ class BooksApp extends React.Component {
             return { books: state.books.concat(book) };
           })
         })
-      })
-  }
-  refreshAllBooks = () => {
-    BooksAPI.getAll()
-      .then((books) => { this.setState(() => ({
-          books: books,
-        }));
+        console.log(books)
       })
   }
   updateQuery = (query) => {
@@ -40,6 +34,7 @@ class BooksApp extends React.Component {
     } else {
       BooksAPI.search(query)
         .then(books => {
+          console.log(books);
           if (!books.error) {
             BooksAPI.getAll()
               .then(bookResults => {
@@ -49,7 +44,8 @@ class BooksApp extends React.Component {
                       book.shelf = bookResult.shelf
                       this.updateBook(bookResult, bookResult.shelf)
                     } else {
-                      this.updateBook(bookResult, 'none')
+                      book.shelf = bookResult.shelf
+                      // this.updateBook(book, 'none')
                     }
                   })
                 })
@@ -86,7 +82,7 @@ class BooksApp extends React.Component {
   }
 
   render() {
-    const { books, bookGrid, currentlyReading, wantToRead, read } = this.state
+    const { books, bookGrid } = this.state
 
     return (
       <div className="app">
@@ -96,9 +92,6 @@ class BooksApp extends React.Component {
         <Route exact path="/" render={() => (
           <Shelves
             updateBook={this.updateBook}
-            currentlyReading={currentlyReading}
-            wantToRead={wantToRead}
-            read={read}
             books={books}
           />
         )} />
