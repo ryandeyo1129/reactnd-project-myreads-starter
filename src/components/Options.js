@@ -7,8 +7,15 @@ export class Options extends React.Component {
     this.props.updateBook(this.props.book, this.state.value);
   };
   onChange = (e) => {
-    const shelfSelect = e.target.value;
-    this.setState({ value: shelfSelect }, () => { this.updateBook(this.props.book, shelfSelect); })
+    e.preventDefault();
+
+    if (window.location.pathname === "/") {
+      const shelfSelect = e.target.value;
+      this.setState({ value: shelfSelect }, () => { this.updateBook(); })
+    } else {
+      const shelfSelect = e.target.value;
+      this.setState({ value: shelfSelect }, () => { this.updateBook(); })
+    }
   }
   
   render() {

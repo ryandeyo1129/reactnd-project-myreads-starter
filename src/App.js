@@ -22,7 +22,6 @@ class BooksApp extends React.Component {
             return { books: state.books.concat(book) };
           })
         })
-        console.log(books)
       })
   }
   updateQuery = (query) => {
@@ -33,26 +32,23 @@ class BooksApp extends React.Component {
       }));
     } else {
       BooksAPI.search(query)
-        .then(books => {
-          console.log(books);
-          if (!books.error) {
-            BooksAPI.getAll()
-              .then(bookResults => {
-                bookResults.forEach(bookResult => {
-                  books.forEach(book => {
-                    if (bookResult.id === book.id) {
-                      book.shelf = bookResult.shelf
-                      this.updateBook(bookResult, bookResult.shelf)
-                    } else {
-                      book.shelf = bookResult.shelf
-                      // this.updateBook(book, 'none')
-                    }
-                  })
-                })
+        .then(searchedBooks => {
+          console.log('searchedBooks', searchedBooks);
+          if (!searchedBooks.error) {
+            this.state.books.forEach(book => {
+              searchedBooks.forEach(searchedBook => {
+                if (searchedBook.id === book.id) {
+                  searchedBook.shelf = book.shelf;
+                  console.log('compare', searchedBook, book)
+                  // this.updateBook(searchedBook, book.shelf)
+                } else {
+                  searchedBook.shelf = 'none';
+                }
               })
+            })
             this.setState(() => ({
               query: query.trim(),
-              bookGrid: books,
+              bookGrid: searchedBooks,
               error: false
             }))
           } else {
@@ -67,17 +63,25 @@ class BooksApp extends React.Component {
   updateBook = (book, shelf) => {
     BooksAPI.update(book, shelf)
       .then((shelves) => {
-        let bookList = this.state.books
-        book.shelf = shelf
-
-        this.setState(state => {
-          return { 
-            books: state.books.filter(listBook => listBook.id === book.id)
-          }
-        })
-        this.setState({
-          books: bookList
-        })
+        console.log(shelves);
+        for (const [shelfName, books] of Object.entries(shelves)) {
+          console.log(shelfName);
+          books.forEach(shelfBook => {
+            if (shelfBook === book.id) {
+              book.shelf = shelf
+              this.setState(state => {
+                return { 
+                  books: state.books.filter(listBook => listBook.id !== book.id)
+                }
+              })
+              this.setState(state => {
+                return { 
+                  books: state.books.concat(book)
+                };
+              })
+            }
+          })
+        }
       })
   }
 
